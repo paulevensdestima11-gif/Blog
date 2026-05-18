@@ -3,31 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Flask Blog</title>
+    <title>Update Blog Post</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <h1>Welcome to My Flask Blog!</h1>
+    <h1>✏️ Update Blog Post</h1>
 
-    <!-- Link to the add page -->
-    <a href="{{ url_for('add') }}">+ Add New Post</a>
+    <!--
+        action includes the post ID so Flask knows WHICH post to update
+        method="POST" so Flask knows we're submitting data
+    -->
+    <form action="{{ url_for('update', post_id=post['id']) }}" method="POST">
 
-    <!-- 🔁 Loop through every post Flask sends us from the JSON file -->
-    {% for post in posts %}
-    <div class="post">
-        <h2>{{ post.title }}</h2>
-        <p><em>Written by {{ post.author }}</em></p>
-        <p>{{ post.content }}</p>
+        <!-- TITLE FIELD — pre-filled with current title -->
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" value="{{ post['title'] }}">
 
-        <!-- Update button — sends user to /update/<this post's id> -->
-        <a href="{{ url_for('update', post_id=post.id) }}">✏️ Update</a>
+        <!-- AUTHOR FIELD — pre-filled with current author -->
+        <label for="author">Author:</label>
+        <input type="text" id="author" name="author" value="{{ post['author'] }}">
 
-        <!-- Delete button — sends user to /delete/<this post's id> -->
-        <a href="{{ url_for('delete', post_id=post.id) }}">🗑️ Delete</a>
+        <!-- CONTENT FIELD — pre-filled with current content -->
+        <label for="content">Content:</label>
+        <textarea id="content" name="content">{{ post['content'] }}</textarea>
 
-    </div>
-    {% endfor %}
+        <!-- SUBMIT BUTTON -->
+        <button type="submit">Update Post</button>
+
+    </form>
+
+    <!-- Link to go back home without changing anything -->
+    <a href="/">← Back to Home</a>
 
 </body>
 </html>
