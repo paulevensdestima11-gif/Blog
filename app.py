@@ -13,7 +13,7 @@ def load_posts():
 def save_posts(posts):
     """Write the updated list of posts back to our JSON storage file."""
     with open('blog_posts.json', 'w') as f:
-        json.dump(posts, f, indent=4)  # indent=4 keeps the file neat & readable
+        json.dump(posts, f, indent=4)
 
 
 @app.route('/')
@@ -25,17 +25,14 @@ def index():
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        blog_posts = load_posts()  # 1. load existing posts
+        blog_posts = load_posts()
 
-        # 2. grab each field from the submitted form
         title = request.form.get('title')
         author = request.form.get('author')
         content = request.form.get('content')
 
-        # 3. generate a unique ID (highest existing ID + 1)
         new_id = max(post['id'] for post in blog_posts) + 1 if blog_posts else 1
 
-        # 4. build the new post as a dictionary
         new_post = {
             'id': new_id,
             'title': title,
@@ -43,12 +40,24 @@ def add():
             'content': content
         }
 
-        blog_posts.append(new_post)  # 5. add it to the list
-        save_posts(blog_posts)  # 6. save updated list to JSON
+        blog_posts.append(new_post)
+        save_posts(blog_posts)
 
-        return redirect(url_for('index'))  # 7. send user back to home page
+        return redirect(url_for('index'))
 
-    return render_template('add.html')  # GET → just show the form
+    return render_template('add.html')
+
+
+@app.route('/delete/<int:post_id>')
+def delete(post_id):
+    blog_posts = load_posts()  # 1. load all posts
+
+    # 2. keep every post EXCEPT the one with the matching id
+    updated_posts = [post for post in blog_posts if post['id'] != post_id]
+
+    save_posts(updated_posts)  # 3. save updated list
+
+    return redirect(url_for('index'))  # 4. back to home!
 
 
 if __name__ == '__main__':
