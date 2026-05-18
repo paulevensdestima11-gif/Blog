@@ -21,8 +21,8 @@ def fetch_post_by_id(post_id):
     blog_posts = load_posts()
     for post in blog_posts:
         if post['id'] == post_id:
-            return post  # found it! return just this one post
-    return None  # went through all posts, none matched
+            return post
+    return None
 
 
 @app.route('/')
@@ -39,7 +39,13 @@ def add():
         author = request.form.get('author')
         content = request.form.get('content')
         new_id = max(post['id'] for post in blog_posts) + 1 if blog_posts else 1
-        new_post = {'id': new_id, 'title': title, 'author': author, 'content': content}
+        new_post = {
+            'id': new_id,
+            'title': title,
+            'author': author,
+            'content': content,
+            'likes': 0  # ← new posts start with 0 likes
+        }
         blog_posts.append(new_post)
         save_posts(blog_posts)
         return redirect(url_for('index'))
@@ -56,26 +62,35 @@ def delete(post_id):
 
 @app.route('/update/<int:post_id>', methods=['GET', 'POST'])
 def update(post_id):
-    post = fetch_post_by_id(post_id)  # fetch just this one post
+    post = fetch_post_by_id(post_id)
 
     if post is None:
-        return "Post not found", 404  # safety net — bad ID in URL
+        return "Post not found", 404
 
     if request.method == 'POST':
         blog_posts = load_posts()
-
-        # loop through all posts and update the matching one
         for p in blog_posts:
             if p['id'] == post_id:
                 p['title'] = request.form.get('title')
                 p['author'] = request.form.get('author')
                 p['content'] = request.form.get('content')
-
         save_posts(blog_posts)
-        return redirect(url_for('index'))  # back to home after saving
+        return redirect(url_for('index'))
 
-    # GET request → show the form pre-filled with current post data
     return render_template('update.html', post=post)
+
+
+@app.route('/like/<int:post_id>')
+def like(post_id):
+    blog_posts = load_posts()  # 1. load all posts
+
+    for post in blog_posts:
+        if post['id'] == post_id:
+            post['likes'] += 1  # 2. increment likes by 1
+            break  # 3. found it, no need to keep looping
+
+    save_posts(blog_posts)  # 4. save updated likes to JSON
+    return redirect(url_for('index'))  # 5. back to home
 
 
 if __name__ == '__main__':
